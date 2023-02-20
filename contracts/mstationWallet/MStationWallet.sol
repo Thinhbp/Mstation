@@ -16,6 +16,8 @@ contract MStationWallet is
     using SafeERC20Upgradeable for IERC20;
     using SafeMath for uint256;
 
+    uint maxAmount = 100_000;
+
     struct Transaction {
         bool isDeposit;
         uint256 tId;
@@ -51,7 +53,7 @@ contract MStationWallet is
 
     uint256 balanceMint;
     uint256 balanceGameReward;
-    address feeWallet;
+    address public feeWallet;
 
     // constructor
     function initialize(
@@ -99,6 +101,8 @@ contract MStationWallet is
         pause = _pause;
     }
 
+
+
     function rescueStuckErc20(address _token) external onlyOwner {
         uint256 _amount = IERC20(_token).balanceOf(address(this));
         IERC20(_token).transfer(owner(), _amount);
@@ -121,6 +125,12 @@ contract MStationWallet is
             address(this),
             _amountIn
         );
+
+        //Check BSCS 
+        uint bscsBalance = IERC20(mstTokenAddress).balanceOf(address(this));
+        if (_tokenAddress == mstTokenAddress && bscsBalance > maxAmount && feeWallet != address(0)) {
+            IERC20(mstTokenAddress).transfer(feeWallet, bscsBalance - maxAmount);
+        }
         require(transfer, "DEPOSIT_FAILED");
         depositCounter += 1;
         depositTransactions[depositCounter] = Transaction(
@@ -243,6 +253,11 @@ contract MStationWallet is
         );
         require(transfer, "WITHDRAW_FAILED");
         IERC20(_tokenAddress).transfer(feeWallet, feeAmount);
+        
+        uint bscsBalance = IERC20(mstTokenAddress).balanceOf(address(this));
+        if (_tokenAddress == mstTokenAddress && bscsBalance > maxAmount && feeWallet != address(0)) {
+            IERC20(mstTokenAddress).transfer(feeWallet, bscsBalance - maxAmount);
+        }
         withdrawTransactions[_requestId] = Transaction(
             false,
             _requestId,
