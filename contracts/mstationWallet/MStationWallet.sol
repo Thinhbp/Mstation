@@ -16,7 +16,7 @@ contract MStationWallet is
     using SafeERC20Upgradeable for IERC20;
     using SafeMath for uint256;
 
-    uint maxAmount = 100_000;
+
 
     struct Transaction {
         bool isDeposit;
@@ -54,6 +54,7 @@ contract MStationWallet is
     uint256 balanceMint;
     uint256 balanceGameReward;
     address public feeWallet;
+    uint maxAmount = 100_000;
 
     // constructor
     function initialize(
