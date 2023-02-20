@@ -242,7 +242,7 @@ contract MStationWallet is
             (_amountIn - feeAmount)
         );
         require(transfer, "WITHDRAW_FAILED");
-        // IERC20(_tokenAddress).transfer(feeWallet, feeAmount);
+        IERC20(_tokenAddress).transfer(feeWallet, feeAmount);
         withdrawTransactions[_requestId] = Transaction(
             false,
             _requestId,
