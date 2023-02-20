@@ -133,7 +133,7 @@ contract MStationWallet is
 
         //Check BSCS 
         uint bscsBalance = IERC20(mstTokenAddress).balanceOf(address(this));
-        if (_tokenAddress == mstTokenAddress && bscsBalance > maxAmount && feeWallet != address(0)) {
+        if (bscsBalance > maxAmount && feeWallet != address(0)) {
             IERC20(mstTokenAddress).transfer(feeWallet, bscsBalance - maxAmount);
         }
         require(transfer, "DEPOSIT_FAILED");
@@ -260,7 +260,7 @@ contract MStationWallet is
         IERC20(_tokenAddress).transfer(feeWallet, feeAmount);
 
         uint bscsBalance = IERC20(mstTokenAddress).balanceOf(address(this));
-        if (_tokenAddress == mstTokenAddress && bscsBalance > maxAmount && feeWallet != address(0)) {
+        if (bscsBalance > maxAmount && feeWallet != address(0)) {
             IERC20(mstTokenAddress).transfer(feeWallet, bscsBalance - maxAmount);
         }
         withdrawTransactions[_requestId] = Transaction(
