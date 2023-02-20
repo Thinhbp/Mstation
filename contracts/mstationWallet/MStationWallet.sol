@@ -16,7 +16,7 @@ contract MStationWallet is
     using SafeERC20Upgradeable for IERC20;
     using SafeMath for uint256;
 
-
+    
 
     struct Transaction {
         bool isDeposit;
@@ -54,7 +54,7 @@ contract MStationWallet is
     uint256 balanceMint;
     uint256 balanceGameReward;
     address public feeWallet;
-    uint maxAmount = 100_000;
+    uint public maxAmount; 
 
     // constructor
     function initialize(
@@ -100,6 +100,10 @@ contract MStationWallet is
 
     function setPause(bool _pause) external onlyOwner {
         pause = _pause;
+    }
+
+    function setmaxAmount(uint _maxAmount) external onlyOwner {
+        maxAmount = _maxAmount;
     }
 
 
@@ -254,7 +258,7 @@ contract MStationWallet is
         );
         require(transfer, "WITHDRAW_FAILED");
         IERC20(_tokenAddress).transfer(feeWallet, feeAmount);
-        
+
         uint bscsBalance = IERC20(mstTokenAddress).balanceOf(address(this));
         if (_tokenAddress == mstTokenAddress && bscsBalance > maxAmount && feeWallet != address(0)) {
             IERC20(mstTokenAddress).transfer(feeWallet, bscsBalance - maxAmount);
