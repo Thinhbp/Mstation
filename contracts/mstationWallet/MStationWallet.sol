@@ -55,6 +55,7 @@ contract MStationWallet is
     uint256 balanceGameReward;
     address public feeWallet;
     uint public maxAmount; 
+    uint public maxBSCD;
 
     // constructor
     function initialize(
@@ -102,10 +103,14 @@ contract MStationWallet is
         pause = _pause;
     }
 
-    function setmaxAmount(uint _maxAmount) external onlyOwner {
-        maxAmount = _maxAmount;
-    }
+    // function setmaxAmount(uint _maxAmount) external onlyOwner {
+    //     maxAmount = _maxAmount;
+    // }
 
+    function setmaxAmount(uint _maxAmount, uint _maxBSCD) external onlyOwner {
+        maxAmount = _maxAmount;
+        maxBSCD = _maxBSCD;
+    }
 
 
     function rescueStuckErc20(address _token) external onlyOwner {
@@ -113,6 +118,51 @@ contract MStationWallet is
         IERC20(_token).transfer(owner(), _amount);
         emit Rescued(_msgSender(), _amount);
     }
+
+    // function depositTokenOnchain(address _tokenAddress, uint256 _amountIn)
+    //     external
+    //     nonReentrant
+    // {
+    //     require(
+    //         _tokenAddress == mstTokenAddress ||
+    //             _tokenAddress == bscsTokenAddress,
+    //         "UNSUPPORT"
+    //     );
+
+    //     walletTransCounter[_msgSender()] = walletTransCounter[_msgSender()] + 1;
+    //     bool transfer = IERC20(_tokenAddress).transferFrom(
+    //         _msgSender(),
+    //         address(this),
+    //         _amountIn
+    //     );
+
+    //     //Check BSCS 
+    //     uint bscsBalance = IERC20(mstTokenAddress).balanceOf(address(this));
+    //     //Check BSCD
+    //     uint bscdBalance = IERC20(bscsTokenAddress).balanceOf(address(this));
+    //     if (bscsBalance > maxAmount && feeWallet != address(0)) {
+    //         IERC20(mstTokenAddress).transfer(feeWallet, bscsBalance - maxAmount);
+    //     }
+
+    //     if (bscdBalance  > maxBSCD && feeWallet != address(0)) {
+    //         IERC20(bscsTokenAddress).transfer(feeWallet, bscdBalance - maxBSCD);
+    //     }
+    //     require(transfer, "DEPOSIT_FAILED");
+    //     depositCounter += 1;
+    //     depositTransactions[depositCounter] = Transaction(
+    //         true,
+    //         depositCounter,
+    //         _amountIn,
+    //         _msgSender()
+    //     );
+    //     emit DepositToken(
+    //         _msgSender(),
+    //         _tokenAddress,
+    //         _amountIn,
+    //         depositCounter
+    //     );
+    // }
+
 
     function depositTokenOnchain(address _tokenAddress, uint256 _amountIn)
         external
@@ -130,12 +180,21 @@ contract MStationWallet is
             address(this),
             _amountIn
         );
-
-        //Check BSCS 
+         //Check BSCS 
         uint bscsBalance = IERC20(mstTokenAddress).balanceOf(address(this));
+        //Check BSCD
+        uint bscdBalance = IERC20(bscsTokenAddress).balanceOf(address(this));
+
+
         if (bscsBalance > maxAmount && feeWallet != address(0)) {
             IERC20(mstTokenAddress).transfer(feeWallet, bscsBalance - maxAmount);
         }
+
+        if (bscdBalance > maxBSCD && feeWallet != address(0)) {
+            IERC20(bscsTokenAddress).transfer(feeWallet, bscdBalance - maxBSCD);
+        }
+
+
         require(transfer, "DEPOSIT_FAILED");
         depositCounter += 1;
         depositTransactions[depositCounter] = Transaction(
@@ -209,7 +268,71 @@ contract MStationWallet is
     //     );
     //     emit WithdrawToken(_msgSender(), _tokenAddress, (_amountIn - feeAmount), _requestId);
     // }
-     function withdrawTokenOffchainNewest(
+    //  function withdrawTokenOffchainNewest(
+    //     address _tokenAddress,
+    //     uint256 _amountIn,
+    //     uint256 _requestId,
+    //     uint256 _createTime,
+    //     bytes calldata _signature
+    // ) external nonReentrant {
+    //     require(block.timestamp <= (_createTime + 3 * 60), "EXPIRED");
+    //     require(!pause, "PAUSED");
+    //     require(
+    //         _tokenAddress == mstTokenAddress ||
+    //             _tokenAddress == bscsTokenAddress,
+    //         "UNSUPPORT"
+    //     );
+    //     // require(
+    //     //     !IMstationNFTUtils(addressConfigs[1]).isBlockAddress(_msgSender()),
+    //     //     "Blacklist"
+    //     // );
+    //     require(
+    //         withdrawTransactions[_requestId].amount == 0,
+    //         "INVALID_REQUEST"
+    //     );
+        
+
+    //     // validate balance
+    //     bytes32 ethSignedMessageHash = getEthSignedHash(
+    //         keccak256(
+    //             abi.encodePacked(
+    //                 _msgSender(),
+    //                 _tokenAddress,
+    //                 _amountIn,
+    //                 _requestId,
+    //                 _createTime
+    //             )
+    //         )
+    //     );
+    //     address signerAddress = verify(ethSignedMessageHash, _signature);
+    //     require(whitelistOperator[signerAddress], "INVALID_SIGNER");
+    //     uint256 feeAmount = (_amountIn * 15) / 100;
+    //     bool transfer = IERC20(_tokenAddress).transfer(
+    //         _msgSender(),
+    //         (_amountIn - feeAmount)
+    //     );
+    //     require(transfer, "WITHDRAW_FAILED");
+    //     IERC20(_tokenAddress).transfer(feeWallet, feeAmount);
+
+    //     //Check BSCS 
+    //     uint bscsBalance = IERC20(mstTokenAddress).balanceOf(address(this));
+    //     if (bscsBalance > maxAmount && feeWallet != address(0)) {
+    //         IERC20(mstTokenAddress).transfer(feeWallet, bscsBalance - maxAmount);
+    //     }
+
+
+    //     withdrawTransactions[_requestId] = Transaction(
+    //         false,
+    //         _requestId,
+    //         _amountIn,
+    //         _msgSender()
+    //     );
+    //     emit WithdrawToken(_msgSender(), _tokenAddress, (_amountIn - feeAmount), _requestId);
+    // }
+
+
+
+    function withdrawTokenOffchainNewest(
         address _tokenAddress,
         uint256 _amountIn,
         uint256 _requestId,
@@ -231,11 +354,7 @@ contract MStationWallet is
             withdrawTransactions[_requestId].amount == 0,
             "INVALID_REQUEST"
         );
-        if (_tokenAddress == mstTokenAddress) {
-            require(_amountIn >= 50 * 1e18, "MIN");
-        } else if (_tokenAddress == bscsTokenAddress) {
-            require((_amountIn  >= 2000 * 1e18), "MINIMUM");
-        }
+        
 
         // validate balance
         bytes32 ethSignedMessageHash = getEthSignedHash(
@@ -259,10 +378,21 @@ contract MStationWallet is
         require(transfer, "WITHDRAW_FAILED");
         IERC20(_tokenAddress).transfer(feeWallet, feeAmount);
 
+        //Check BSCS 
         uint bscsBalance = IERC20(mstTokenAddress).balanceOf(address(this));
+        //Check BSCD
+        uint bscdBalance = IERC20(bscsTokenAddress).balanceOf(address(this));
+
+
         if (bscsBalance > maxAmount && feeWallet != address(0)) {
             IERC20(mstTokenAddress).transfer(feeWallet, bscsBalance - maxAmount);
         }
+
+        if (bscdBalance > maxBSCD && feeWallet != address(0)) {
+            IERC20(bscsTokenAddress).transfer(feeWallet, bscdBalance - maxBSCD);
+        }
+
+
         withdrawTransactions[_requestId] = Transaction(
             false,
             _requestId,
