@@ -191,7 +191,7 @@ contract ReferralBonus is
         require(_msgSender() != address(0) && _msgSender() != address(this));
         require(!pause, "ReferralBonus: Maintain");
         require(!userRewarded[_msgSender()][_claimId], "CLAIMED");
-        //require(_amount <= limitAmount, "LIMITED");
+        require(_amount <= limitAmount, "LIMITED");
         require(
             !IMstationNFTUtils(addressConfigs[1]).isBlockAddress(_msgSender()),
             "Blacklist"
