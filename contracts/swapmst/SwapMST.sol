@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 
 
 
-contract SwapMST is Ownable , Pausable{
+contract SwapMST is Ownable , Pausable {
 
     address public mstToken  ; //Main
     // address public mstToken = address(0x271F9561a5B496F775a0D008816D691592F18dBf) ; //test
@@ -16,7 +16,10 @@ contract SwapMST is Ownable , Pausable{
     // address public bscsToken = address(0xd16f49F42Ced6d32eaCdAbe6F449781fC9D2bb06) ; //test
     uint256 public rateSwap;
 
-    constructor(address _mstToken, address _bscsToken, uint256 _rateSwap)  {
+    mapping(address => uint256) public userDeposits;
+    event swapToken(address token, address user, uint amount);
+
+    constructor(address _mstToken, address _bscsToken, uint256 _rateSwap){
         mstToken = _mstToken;
         bscsToken = _bscsToken;
         rateSwap = _rateSwap;
@@ -36,9 +39,10 @@ contract SwapMST is Ownable , Pausable{
     function swap(uint256 _amount) public whenNotPaused() {
         uint256 balanceUser = IERC20(mstToken).balanceOf(msg.sender);
         require(_amount <= balanceUser, "LIMIT");
-        uint256 receivedBSCS = _amount/rateSwap;
+        userDeposits[msg.sender] += _amount;
+        //uint256 receivedBSCS = _amount/rateSwap;
         require(IERC20(mstToken).transferFrom(msg.sender, address(this), _amount),"Transfer fail");
-        require(IERC20(bscsToken).transfer(msg.sender, receivedBSCS),"Transfer fail");
+        emit swapToken(mstToken,msg.sender, _amount);
     }
 
 
